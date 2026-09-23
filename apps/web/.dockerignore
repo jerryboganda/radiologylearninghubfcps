@@ -1,0 +1,10 @@
+.dockerignore
+.git
+.env
+.env.*
+!.env.example
+node_modules
+.svelte-kit
+build
+coverage
+README.md

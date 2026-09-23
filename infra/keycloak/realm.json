@@ -1,0 +1,21 @@
+{
+  "realm": "radbrain",
+  "enabled": true,
+  "displayName": "radbrain",
+  "clients": [
+    {
+      "clientId": "radbrain-web",
+      "name": "radbrain Web",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "radbrain-web-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ]
+}
