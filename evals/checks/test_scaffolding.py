@@ -35,7 +35,11 @@ def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
     assert "DATABASE_MIGRATOR_URL" in compose
     assert "DATABASE_MIGRATOR_URL" not in compose.split("  api:", 1)[1].split("  worker:", 1)[0]
     assert "DATABASE_MIGRATOR_URL" not in compose.split("  worker:", 1)[1].split("  web:", 1)[0]
-    assert "quay.io/minio/minio:RELEASE." in compose
+    assert "  storage:" in compose
+    assert "rustfs/rustfs:1.0.0" in compose
+    assert "RUSTFS_ACCESS_KEY" in compose
+    assert "http://minio:9000" not in compose
+    assert "  minio:" not in compose
     assert "uvicorn" in dockerfile
     assert "celery" in compose
     assert "service_completed_successfully" in compose
@@ -45,10 +49,14 @@ def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
     assert "pg_auth_members" in migration
     assert "pg_has_role" not in migration
     assert "RAISE EXCEPTION (" not in migration
+    assert "REVOKE ALL ON app.current_tenant_id()" not in migration
+    assert "REVOKE ALL ON app.touch_updated_at()" not in migration
     assert "RADBRAIN_MIGRATOR_IMAGE" in production
     assert "RADBRAIN_API_IMAGE" in production
     assert "RADBRAIN_WORKER_IMAGE" in production
-    assert production.count("build: !reset null") == 4
+    assert "RADBRAIN_STORAGE_IMAGE" in production
+    assert "RADBRAIN_WEB_IMAGE" in production
+    assert production.count("build: !reset null") == 5
     assert not (ROOT / "infra" / "api" / "placeholder.py").exists()
 
 

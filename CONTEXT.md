@@ -73,7 +73,7 @@ integration test, OIDC browser login, a real two-tenant database test, or CI.
 `.env.example` documents the current settings contract. It includes separate app
 and migrator database URLs, OIDC, Redis, S3, embedding dimensions, model config
 path, ungrounded-answer guard, and the reserved Core tenant UUID. Values marked
-`change-me` and public MinIO defaults are local-development placeholders only.
+`change-me` and public RustFS defaults are local-development placeholders only.
 
 `ALLOW_UNGROUNDED_DEFAULT=false` is a hard default. Concrete provider models and
 provider keys are not approved by `.env.example` or `packages/models/models.yaml`.

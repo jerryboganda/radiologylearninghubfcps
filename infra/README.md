@@ -1,6 +1,6 @@
 # radbrain local Compose stack
 
-The default stack starts PostgreSQL/pgvector, Redis, MinIO, Keycloak, the web shell,
+The default stack starts PostgreSQL/pgvector, Redis, RustFS, Keycloak, the web shell,
 the real FastAPI process, the real Celery worker, and a one-shot migration job. The
 runtime containers receive the RLS-bound app role; only the migration job receives
 `DATABASE_MIGRATOR_URL`. The web image builds from `apps/web` as its Docker context,
@@ -16,9 +16,9 @@ with the runtime URL.
 
 `infra/compose/production.yml` is the production override used by the pull-only
 deployment workflow. It requires immutable `RADBRAIN_MIGRATOR_IMAGE`,
-`RADBRAIN_API_IMAGE`, `RADBRAIN_WORKER_IMAGE`, and `RADBRAIN_WEB_IMAGE` references and
-removes all local build sections; the deployment host must pull those images rather
-than build them locally.
+`RADBRAIN_API_IMAGE`, `RADBRAIN_WORKER_IMAGE`, `RADBRAIN_STORAGE_IMAGE`, and
+`RADBRAIN_WEB_IMAGE` references and removes all local build sections; the
+deployment host must pull those images rather than build them locally.
 
 Copy `.env.example` to `.env` before using the stack. Never commit `.env` or
 private study material.

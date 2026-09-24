@@ -173,5 +173,6 @@ jobs:
           RADBRAIN_MIGRATOR_IMAGE: ghcr.io/example/radbrain-migrator:sha-ci
           RADBRAIN_API_IMAGE: ghcr.io/example/radbrain-api:sha-ci
           RADBRAIN_WORKER_IMAGE: ghcr.io/example/radbrain-worker:sha-ci
+          RADBRAIN_STORAGE_IMAGE: rustfs/rustfs:1.0.0
           RADBRAIN_WEB_IMAGE: ghcr.io/example/radbrain-web:sha-ci
         run: docker compose -f docker-compose.yml -f infra/compose/production.yml config --quiet

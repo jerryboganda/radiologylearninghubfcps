@@ -33,12 +33,12 @@ The target Compose service names are:
 | `worker` | Celery worker process | no browser endpoint |
 | `postgres` | PostgreSQL 16 + pgvector, migrations/RLS | database only; host port per Compose |
 | `redis` | Queue, cache, and rate-limit service | `redis://localhost:6379` by default |
-| `minio` | Private S3-compatible storage | API `http://localhost:9000`; console commonly `:9001` |
+| `storage` | Private S3-compatible storage (RustFS) | API `http://localhost:9000`; console `:9001` |
 | `keycloak` | OIDC identity provider | `http://localhost:8080`; realm `/realms/radbrain` |
 
 Verify actual published ports with `docker compose config` and `docker compose ps`;
 this table is not a substitute for the checked-in Compose file. The default stack starts
-PostgreSQL, Redis, MinIO, Keycloak, a one-shot migration job, the real FastAPI API,
+PostgreSQL, Redis, RustFS, Keycloak, a one-shot migration job, the real FastAPI API,
 the real Celery worker, and the web shell. The migration job completes before the API
 and worker start. CI and a local Docker installation are required to execute this
 startup sequence successfully; Compose configuration validation alone is not an exit
@@ -73,7 +73,7 @@ Review every value even when the local default is convenient:
   The checked-in disposable local realm may contain its own development-only secret;
   align the environment with that realm for local use, or rotate the local client and
   realm consistently. Never reuse a local value in staging.
-- `S3_*` settings describe the private MinIO bucket in development.
+- `S3_*` settings describe the private RustFS bucket in development.
 - `MODELS_CONFIG_PATH` points to checked-in mock route configuration.
 - `ALLOW_UNGROUNDED_DEFAULT` remains `false` while provider approval is open.
 - `COOKIE_SECURE=false` is local HTTP only. Staging/production requires HTTPS and
@@ -330,7 +330,7 @@ redacted results.
 Escalate to:
 
 - **security owner** for RLS, auth, credential, cross-tenant, or sensitive-log issues;
-- **platform owner** for Compose/Postgres/Redis/MinIO/Keycloak availability;
+- **platform owner** for Compose/Postgres/Redis/RustFS/Keycloak availability;
 - **application owner** for API/web contract or migration incompatibilities;
 - **release owner** for failed staging exit evidence or rollback.
 
