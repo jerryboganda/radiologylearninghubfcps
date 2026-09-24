@@ -11,6 +11,9 @@ from packages.models.routing import RouteName, load_model_routing_config
 from packages.prompts.contracts import load_prompt
 
 ROOT = Path(__file__).resolve().parents[2]
+COMPOSE = ROOT / "docker-compose.yml"
+PRODUCTION_COMPOSE = ROOT / "infra" / "compose" / "production.yml"
+DOCKERFILE = ROOT / "infra" / "python" / "Dockerfile"
 MIGRATIONS = (
     ROOT / "apps" / "api" / "migrations" / "versions" / "20260924_0001_m0_foundation.py",
     ROOT / "apps" / "api" / "migrations" / "versions" / "20260924_0002_m0_rls.py",
@@ -19,6 +22,27 @@ MODEL_CONFIG = ROOT / "packages" / "models" / "models.yaml"
 CURRICULUM = ROOT / "packages" / "curriculum" / "fcps2_radiology.json"
 EVAL_FIXTURE = ROOT / "evals" / "fixtures" / "synthetic_smoke_v1.json"
 PROMPT_ROOT = ROOT / "packages" / "prompts"
+
+
+def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
+    compose = COMPOSE.read_text(encoding="utf-8")
+    production = PRODUCTION_COMPOSE.read_text(encoding="utf-8")
+    dockerfile = DOCKERFILE.read_text(encoding="utf-8")
+
+    assert "  migrate:" in compose
+    assert "  api:" in compose
+    assert "  worker:" in compose
+    assert "DATABASE_MIGRATOR_URL" in compose
+    assert "DATABASE_MIGRATOR_URL" not in compose.split("  api:", 1)[1].split("  worker:", 1)[0]
+    assert "DATABASE_MIGRATOR_URL" not in compose.split("  worker:", 1)[1].split("  web:", 1)[0]
+    assert "uvicorn" in dockerfile
+    assert "celery" in compose
+    assert "service_completed_successfully" in compose
+    assert "RADBRAIN_MIGRATOR_IMAGE" in production
+    assert "RADBRAIN_API_IMAGE" in production
+    assert "RADBRAIN_WORKER_IMAGE" in production
+    assert production.count("build: !reset null") == 4
+    assert not (ROOT / "infra" / "api" / "placeholder.py").exists()
 
 
 def test_migration_defines_rls_and_role_separation() -> None:

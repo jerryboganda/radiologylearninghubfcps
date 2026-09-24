@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from typing import Annotated, Any, cast
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from apps.api.app.core.config import get_settings
 from apps.api.app.db.session import (
@@ -10,6 +10,7 @@ from apps.api.app.db.session import (
     reset_tenant_context,
     set_tenant_context,
 )
+from apps.api.app.observability import logger
 from apps.api.app.schemas.common import (
     ErrorResponse,
     ExportJobResponse,
@@ -42,8 +43,24 @@ oidc_verifier = OIDCVerifier(settings)
 
 @app.middleware("http")
 async def request_context(request: Request, call_next: RequestResponseEndpoint) -> Response:
-    request.state.request_id = request.headers.get("x-request-id")
-    return await call_next(request)
+    supplied_request_id = request.headers.get("x-request-id")
+    try:
+        request_id = str(UUID(supplied_request_id)) if supplied_request_id else str(uuid4())
+    except ValueError:
+        request_id = str(uuid4())
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["x-request-id"] = request_id
+    logger.info(
+        "request_completed",
+        extra={
+            "request_id": request_id,
+            "method": request.method,
+            "path": request.url.path,
+            "status_code": response.status_code,
+        },
+    )
+    return response
 
 
 @app.get("/health/live", response_model=HealthResponse, tags=["health"])

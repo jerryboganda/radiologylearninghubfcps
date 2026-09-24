@@ -15,15 +15,19 @@ not a usable upload/search product yet.
 ## Current repository shape
 
 - `apps/api`: FastAPI application, settings, SQLAlchemy session plumbing,
-  development-principal API routes, health endpoints, and unit tests.
-- `apps/worker`: worker package/skeleton; durable ingestion is not yet established.
+  development-principal API routes, health endpoints, bounded redacted request logging,
+  and unit tests.
+- `apps/worker`: Celery 5 worker package and stable job identity; durable ingestion is
+  not yet established.
 - `apps/web`: web scaffold is maintained by the web/infrastructure workstream.
 - `apps/api/migrations`: Alembic migration target for PostgreSQL, pgvector, and
   tenant RLS; verify the landed migration before calling M0 RLS complete.
 - `packages`: model-route, prompt, and eval configuration scaffolds. Model routes
   must remain mock-only until the provider decision gate is approved.
 - `evals`: evaluation scaffolding, not a passed quality gate.
-- `infra`: deployment scaffolding, not evidence of a production environment.
+- `infra`: Compose and deployment scaffolding; the default stack now contains a
+  one-shot migrator, real FastAPI/Celery processes, and the web shell, but this is not
+  evidence of a production environment.
 - `scripts`: repository maintenance utilities such as OpenAPI type generation.
 - `docs`: product index, runbooks, and decision records.
 

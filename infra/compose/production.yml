@@ -1,4 +1,16 @@
 services:
+  migrate:
+    image: ${RADBRAIN_MIGRATOR_IMAGE:?RADBRAIN_MIGRATOR_IMAGE must be an immutable image reference}
+    build: !reset null
+
+  api:
+    image: ${RADBRAIN_API_IMAGE:?RADBRAIN_API_IMAGE must be an immutable image reference}
+    build: !reset null
+
+  worker:
+    image: ${RADBRAIN_WORKER_IMAGE:?RADBRAIN_WORKER_IMAGE must be an immutable image reference}
+    build: !reset null
+
   web:
     image: ${RADBRAIN_WEB_IMAGE:?RADBRAIN_WEB_IMAGE must be an immutable image reference}
     build: !reset null

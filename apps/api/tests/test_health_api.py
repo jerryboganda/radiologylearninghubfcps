@@ -12,6 +12,14 @@ def test_liveness_is_public() -> None:
     assert response.json() == {"status": "ok", "service": "api", "environment": "dev"}
 
 
+def test_request_id_is_echoed_as_a_uuid() -> None:
+    request_id = "30000000-0000-0000-0000-000000000003"
+    response = client.get("/health/live", headers={"x-request-id": request_id})
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == request_id
+
+
 def test_me_requires_development_identity() -> None:
     response = client.get("/v1/me")
     assert response.status_code == 401

@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+Radiology Exam Material/
+Radiology Images/
+**/node_modules/
+**/.svelte-kit/
+**/build/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage

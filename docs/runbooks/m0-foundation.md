@@ -28,19 +28,21 @@ The target Compose service names are:
 | Service | M0 purpose | Expected local address/protocol |
 | --- | --- | --- |
 | `web` | SvelteKit PWA shell and auth UI | `http://localhost:3000` |
+| `migrate` | One-shot Alembic migration using the migrator role | no browser endpoint |
 | `api` | FastAPI health/OpenAPI entry point | `http://localhost:8000`; docs at `/docs` |
-| `worker` | Application worker process/skeleton | no browser endpoint |
+| `worker` | Celery worker process | no browser endpoint |
 | `postgres` | PostgreSQL 16 + pgvector, migrations/RLS | database only; host port per Compose |
 | `redis` | Queue, cache, and rate-limit service | `redis://localhost:6379` by default |
 | `minio` | Private S3-compatible storage | API `http://localhost:9000`; console commonly `:9001` |
 | `keycloak` | OIDC identity provider | `http://localhost:8080`; realm `/realms/radbrain` |
 
 Verify actual published ports with `docker compose config` and `docker compose ps`;
-this table is not a substitute for the checked-in Compose file. The default scaffold
-starts all seven named services. However, its `api` and `worker` entries are clearly
-labelled infrastructure placeholders, not the real FastAPI/Celery processes, and the
-web shell depends on the placeholder API. Starting every requested service is an
-infrastructure scaffold result, not a complete M0 exit.
+this table is not a substitute for the checked-in Compose file. The default stack starts
+PostgreSQL, Redis, MinIO, Keycloak, a one-shot migration job, the real FastAPI API,
+the real Celery worker, and the web shell. The migration job completes before the API
+and worker start. CI and a local Docker installation are required to execute this
+startup sequence successfully; Compose configuration validation alone is not an exit
+test.
 
 ## 3. Prerequisites
 
@@ -95,24 +97,17 @@ docker compose up -d
 docker compose ps
 ```
 
-In the current scaffold, that starts all seven services: PostgreSQL, Redis, MinIO,
-Keycloak, the placeholder API, placeholder worker, and the web shell. There are no
-Compose profiles to add.
+The default startup sequence is:
 
-The `api` placeholder returns synthetic health JSON and the `worker` placeholder
-only sleeps; neither is the FastAPI/Celery implementation. Therefore `make up`
-starting every named service does **not** satisfy the M0 exit test. To exercise the
-actual API directly, stop the placeholders and run the application process:
+1. PostgreSQL initializes the disposable superuser, `radbrain_migrator`, and
+   `radbrain_app`.
+2. The `migrate` one-shot job applies Alembic with `DATABASE_MIGRATOR_URL`.
+3. The real API and Celery worker start with the RLS-bound runtime database URL.
+4. The web shell starts after API health and connects to the API's internal URL.
 
-```powershell
-docker compose stop api worker
-python -m apps.api.app.main
-```
-
-The standalone web container still points its internal URL at the Compose `api`
-service, so complete web-to-API integration requires replacing/wiring the real API
-container (or an explicitly approved reachable URL). Do not treat direct local API
-checks as proof of that web integration.
+Verify the sequence with `docker compose ps` and the health endpoints below. A
+running container list or a successful process start is supporting evidence; M0 still
+requires the live OIDC and two-tenant acceptance tests on staging.
 
 Once a real migration configuration and database exist, apply migrations as the
 migrator role:
