@@ -52,9 +52,21 @@ def upgrade() -> None:
                 RAISE EXCEPTION 'runtime role % has forbidden attributes', '{_RUNTIME_ROLE}';
             END IF;
             IF EXISTS (
-                SELECT 1 FROM pg_roles privileged
-                WHERE privileged.rolname = '{_MIGRATOR_ROLE}'
-                  AND pg_has_role('{_RUNTIME_ROLE}', privileged.rolname, 'MEMBER')
+                WITH RECURSIVE role_memberships(roleid, member) AS (
+                    SELECT roleid, member
+                    FROM pg_auth_members
+                    UNION
+                    SELECT granted.roleid, memberships.member
+                    FROM pg_auth_members AS granted
+                    JOIN role_memberships AS memberships
+                      ON memberships.roleid = granted.member
+                )
+                SELECT 1
+                FROM role_memberships
+                JOIN pg_roles AS runtime ON runtime.oid = role_memberships.member
+                JOIN pg_roles AS migrator ON migrator.oid = role_memberships.roleid
+                WHERE runtime.rolname = '{_RUNTIME_ROLE}'
+                  AND migrator.rolname = '{_MIGRATOR_ROLE}'
             ) THEN
                 RAISE EXCEPTION (
                     'runtime role % inherits migrator role %',
@@ -62,9 +74,21 @@ def upgrade() -> None:
                 );
             END IF;
             IF EXISTS (
-                SELECT 1 FROM pg_roles privileged
-                WHERE (privileged.rolsuper OR privileged.rolbypassrls)
-                  AND pg_has_role('{_RUNTIME_ROLE}', privileged.rolname, 'MEMBER')
+                WITH RECURSIVE role_memberships(roleid, member) AS (
+                    SELECT roleid, member
+                    FROM pg_auth_members
+                    UNION
+                    SELECT granted.roleid, memberships.member
+                    FROM pg_auth_members AS granted
+                    JOIN role_memberships AS memberships
+                      ON memberships.roleid = granted.member
+                )
+                SELECT 1
+                FROM role_memberships
+                JOIN pg_roles AS runtime ON runtime.oid = role_memberships.member
+                JOIN pg_roles AS privileged ON privileged.oid = role_memberships.roleid
+                WHERE runtime.rolname = '{_RUNTIME_ROLE}'
+                  AND (privileged.rolsuper OR privileged.rolbypassrls)
             ) THEN
                 RAISE EXCEPTION 'runtime role % inherits a privileged role', '{_RUNTIME_ROLE}';
             END IF;

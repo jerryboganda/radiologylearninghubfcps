@@ -51,12 +51,14 @@ async def request_context(request: Request, call_next: RequestResponseEndpoint) 
     request.state.request_id = request_id
     response = await call_next(request)
     response.headers["x-request-id"] = request_id
+    route = request.scope.get("route")
+    path = getattr(route, "path", "unmatched")
     logger.info(
         "request_completed",
         extra={
             "request_id": request_id,
             "method": request.method,
-            "path": request.url.path,
+            "path": path,
             "status_code": response.status_code,
         },
     )

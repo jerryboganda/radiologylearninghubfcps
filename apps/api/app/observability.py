@@ -11,16 +11,16 @@ from typing import Any
 class RedactingJsonFormatter(logging.Formatter):
     """Emit only allowlisted operational fields as one JSON object."""
 
-    _fields = ("event", "service", "request_id", "method", "path", "status_code")
+    _events = frozenset({"request_completed"})
+    _fields = ("request_id", "method", "path", "status_code")
 
     def format(self, record: logging.LogRecord) -> str:
+        event = record.getMessage() if record.getMessage() in self._events else "unknown_event"
         payload: dict[str, Any] = {
-            "event": record.getMessage(),
+            "event": event,
             "service": "api",
         }
         for field in self._fields:
-            if field in {"event", "service"}:
-                continue
             value = getattr(record, field, None)
             if value is not None:
                 payload[field] = value

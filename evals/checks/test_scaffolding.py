@@ -38,6 +38,11 @@ def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
     assert "uvicorn" in dockerfile
     assert "celery" in compose
     assert "service_completed_successfully" in compose
+    migration = (
+        ROOT / "apps" / "api" / "migrations" / "versions" / "20260924_0002_m0_rls.py"
+    ).read_text(encoding="utf-8")
+    assert "pg_auth_members" in migration
+    assert "pg_has_role" not in migration
     assert "RADBRAIN_MIGRATOR_IMAGE" in production
     assert "RADBRAIN_API_IMAGE" in production
     assert "RADBRAIN_WORKER_IMAGE" in production

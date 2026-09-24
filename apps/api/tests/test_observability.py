@@ -21,9 +21,12 @@ def test_formatter_keeps_only_allowlisted_operational_fields() -> None:
     record.status_code = 200
     record.source_text = "synthetic private text must not be emitted"
     record.authorization = "Bearer must-not-be-emitted"
+    record.msg = "source text must not become an event"
 
     payload = RedactingJsonFormatter().format(record)
 
+    assert '"source text must not become an event"' not in payload
+    assert '"event":"unknown_event"' in payload
     assert '"source_text"' not in payload
     assert '"authorization"' not in payload
     assert '"request_id":"10000000-0000-0000-0000-000000000001"' in payload

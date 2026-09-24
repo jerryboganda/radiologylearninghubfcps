@@ -204,8 +204,10 @@ make security-scan
 ```
 
 CI must install locked dependencies, run the web/Python checks, start the required
-integration services, apply migrations, and execute the RLS suite. Mocks may support
-unit tests but cannot replace Compose/PostgreSQL integration.
+integration services, apply migrations, and execute the RLS suite. The full runtime
+job also builds the real API/worker images, waits for API/web health, and verifies a
+Celery worker ping. Mocks may support unit tests but cannot replace Compose/PostgreSQL
+integration.
 
 Verify health endpoints, structured redacted logs, request/trace IDs, and the
 observability skeleton. A dashboard, queue metric, or collector config is not a pass

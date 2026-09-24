@@ -140,6 +140,26 @@ jobs:
         if: always()
         run: docker compose down -v
 
+  runtime-compose:
+    name: Full runtime Compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Start the full M0 stack
+        shell: bash
+        run: |
+          docker compose up -d --build
+          until curl -fsS http://127.0.0.1:8000/health/live >/dev/null; do sleep 5; done
+          until curl -fsS http://127.0.0.1:3000/api/health >/dev/null; do sleep 5; done
+          docker compose exec -T worker celery -A apps.worker.app.celery_app:celery_app inspect ping --timeout=10 | grep -q pong
+      - name: Show redacted service status
+        run: docker compose ps
+      - name: Stop the full stack
+        if: always()
+        run: docker compose down -v
+
   compose:
     name: Compose validation
     runs-on: ubuntu-latest
