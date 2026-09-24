@@ -18,7 +18,7 @@ evidence:
 3. The two-tenant RLS suite passes as the non-privileged application role.
 4. CI is green.
 
-CI run `36059268863` for revision `5f3e67a` is green. It verifies Python, web,
+CI run `36068149588` for revision `20c2096` is green. It verifies Python, web,
 OpenAPI reproducibility, security scans, Compose validation, live migrations, the
 non-privileged two-tenant RLS proof, and the full runtime Compose startup/API-web-
 worker health path. This is strong CI/runtime evidence, but it is not staging OIDC
