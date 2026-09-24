@@ -54,7 +54,7 @@ def upgrade() -> None:
             IF EXISTS (
                 SELECT 1 FROM pg_roles privileged
                 WHERE privileged.rolname = '{_MIGRATOR_ROLE}'
-                  AND pg_has_role('{_RUNTIME_ROLE}', privileged.oid, 'MEMBER')
+                  AND pg_has_role('{_RUNTIME_ROLE}', privileged.rolname, 'MEMBER')
             ) THEN
                 RAISE EXCEPTION (
                     'runtime role % inherits migrator role %',
@@ -64,7 +64,7 @@ def upgrade() -> None:
             IF EXISTS (
                 SELECT 1 FROM pg_roles privileged
                 WHERE (privileged.rolsuper OR privileged.rolbypassrls)
-                  AND pg_has_role('{_RUNTIME_ROLE}', privileged.oid, 'MEMBER')
+                  AND pg_has_role('{_RUNTIME_ROLE}', privileged.rolname, 'MEMBER')
             ) THEN
                 RAISE EXCEPTION 'runtime role % inherits a privileged role', '{_RUNTIME_ROLE}';
             END IF;
