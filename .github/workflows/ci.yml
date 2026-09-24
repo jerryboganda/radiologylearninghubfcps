@@ -165,7 +165,22 @@ jobs:
             docker compose logs --no-color --tail=200 web
             exit 1
           fi
-          docker compose exec -T worker celery -A apps.worker.app.celery_app:celery_app inspect ping --timeout=10 | grep -q pong
+          worker_ready=false
+          for attempt in {1..24}; do
+            worker_ping="$(docker compose exec -T worker \
+              celery -A apps.worker.app.celery_app:celery_app inspect ping --timeout=5 2>&1 || true)"
+            echo "$worker_ping"
+            if grep -q pong <<<"$worker_ping"; then
+              worker_ready=true
+              break
+            fi
+            sleep 5
+          done
+          if [ "$worker_ready" != true ]; then
+            docker compose ps -a
+            docker compose logs --no-color --tail=200 worker
+            exit 1
+          fi
       - name: Show redacted service status
         run: docker compose ps
       - name: Stop the full stack
