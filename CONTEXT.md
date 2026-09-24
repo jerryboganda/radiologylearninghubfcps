@@ -1,7 +1,7 @@
 # CONTEXT.md — radbrain current implementation context
 
 Last reviewed: **2026-09-24**
-Milestone: **M0 Foundation — implementation scaffold; exit not yet accepted**
+Milestone: **M0 Foundation — CI/runtime verified; staging OIDC exit not yet accepted**
 Canonical requirements: [`docs/SPEC.md`](docs/SPEC.md)
 
 ## Purpose
@@ -103,8 +103,8 @@ The authoritative checklist and rollback steps are in
   local test.
 - The model provider, embedding provider, launch data region, and monthly spend cap
   are unapproved. The model ADR is a gate, not a selection.
-- RLS, OIDC, observability, CI, and staging evidence must be refreshed as other M0
-  work lands. This file describes a point-in-time scaffold and should be updated in
-  the same change that materially alters behavior.
+- CI run `36057363650` on revision `2f3fe24` is green, including full runtime
+  Compose startup and the live non-privileged two-tenant RLS proof. Staging OIDC/browser
+  acceptance, staging trace review, and release/security approvals remain outstanding.
 - Curriculum validation/weights, Core Library sourcing, pricing, retention changes,
   and launch cohort details require human decisions.

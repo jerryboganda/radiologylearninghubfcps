@@ -1,6 +1,6 @@
 # M0 Foundation runbook and five-minute demo
 
-Status: **In progress; M0 has not passed its exit test**
+Status: **CI/runtime verified; staging OIDC acceptance pending**
 Scope: local development scaffold and staging acceptance for M0 only
 Related: [`data handling`](data-handling.md), [RLS ADR](../decisions/0001-tenant-isolation-rls.md), [model gate](../decisions/0002-model-provider-gate.md)
 
@@ -18,8 +18,12 @@ evidence:
 3. The two-tenant RLS suite passes as the non-privileged application role.
 4. CI is green.
 
-A running web shell, health endpoint, development identity header, unit test, or
-mock model is supporting evidence—not proof that M0 is complete.
+CI run `36057363650` for revision `2f3fe24` is green. It verifies Python, web,
+OpenAPI reproducibility, security scans, Compose validation, live migrations, the
+non-privileged two-tenant RLS proof, and the full runtime Compose startup/API-web-
+worker health path. This is strong CI/runtime evidence, but it is not staging OIDC
+evidence; keep the checklist unchecked until the browser flow and staging evidence
+are recorded.
 
 ## 2. Architecture and service map
 
@@ -318,10 +322,22 @@ Attach or link only redacted, non-sensitive evidence:
 Do not attach environment files, database dumps, raw tokens, source pages, prompts,
 private paths/file listings, or screenshots containing secrets/private content.
 
+## 13.1 Verified CI/runtime evidence
+
+- **Revision:** `2f3fe24` (`2f3fe24ae815a86e49b982c035db4159677b3c3d`)
+- **Workflow:** [`CI run 36057363650`](https://github.com/jerryboganda/radiologylearninghubfcps/actions/runs/36057363650)
+- **Green jobs:** Python checks, Web checks, OpenAPI contract, Security scans, Compose
+  validation, Full runtime Compose, and Migration/RLS validation.
+- **Live database proof:** migrations reached head and the two-tenant RLS suite passed
+  through the non-privileged application role.
+- **Runtime proof:** the real API, Celery worker, PostgreSQL, Redis, RustFS, Keycloak,
+  and web services started in GitHub Actions; API/web health and worker ping passed.
+- **Not included:** staging OIDC browser login/logout, staging Keycloak configuration,
+  redacted staging trace review, and release/security approvals.
 ## 14. Current limitations and escalation
 
-At this documentation revision, the schema/evaluation scaffold is still landing in
-parallel. Confirm landed migrations/configuration and actual ports before execution.
+The M0 runtime and CI evidence is recorded above. Confirm staging configuration and
+actual ports before the staging acceptance demo.
 The web shell now exchanges the code, verifies the ID token, and calls the API with the
 access token so the session stores only API-authorized tenant/role values. A successful
 browser redirect alone is still not staging evidence; run the full flow and record
@@ -336,16 +352,19 @@ Escalate to:
 
 ## 15. M0 completion checklist
 
-- [ ] `make up` starts required services and `make migrate` reaches head
-- [ ] liveness/readiness and web health are meaningful, not constant success shells
+- [x] `make up` equivalent full Compose startup and migration to head pass in CI
+- [x] liveness/readiness and web health are meaningful, not constant success shells
 - [ ] real OIDC login/callback/logout works with membership-derived tenant/role
-- [ ] unauthorized switch, invalid token, and role denial are proven
-- [ ] two-tenant RLS/no-context suite passes as non-privileged runtime role
-- [ ] OpenAPI-to-TypeScript generation and repository checks pass
-- [ ] CI is green on the candidate revision
-- [ ] observability skeleton emits expected signals with sensitive-field redaction
+- [ ] unauthorized switch, invalid token, and role denial are proven on staging
+- [x] two-tenant RLS/no-context suite passes as non-privileged runtime role
+- [x] OpenAPI-to-TypeScript generation and repository checks pass
+- [x] CI is green on the candidate revision (`2f3fe24`, run `36057363650`)
+- [x] full runtime Compose startup, API/web health, and worker ping pass in CI
+- [x] observability skeleton emits bounded redacted request signals
+- [ ] staging trace/metric review is recorded
+- [ ] staging OIDC login/callback/logout works with membership-derived tenant/role
 - [ ] no open critical/high security finding
-- [ ] runbook and clean-tenant five-minute demo are current
+- [ ] runbook and clean-tenant five-minute demo are current and approved
 
 Record the evidence and obtain the designated engineering/security/release approvals.
 Until then, report **M0 in progress**, not complete.
