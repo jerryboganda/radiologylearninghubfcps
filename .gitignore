@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Node
+node_modules/
+.npm/
+.svelte-kit/
+build/
+dist/
+coverage/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Runtime data and private study material
+private-materials/
+Radiology Exam Material/
+Radiology Images/
+*.sqlite
+*.db
+
+# Generated API types
+apps/web/src/lib/api/generated/

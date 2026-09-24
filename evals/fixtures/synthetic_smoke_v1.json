@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "fixture_set_id": "synthetic_smoke_v1",
+  "status": "placeholder",
+  "data_class": "synthetic",
+  "cases": [
+    {
+      "case_id": "reason-insufficient-context",
+      "prompt": "reason/v1.yaml",
+      "route": "reason",
+      "tenant_id": "20000000-0000-0000-4000-800000000002",
+      "input": {"question": "Compare two supplied concepts.", "retrieved_context": [], "claim_citations": []},
+      "expected": {"status": "insufficient_context", "claims": [], "citations": []},
+      "assertions": ["schema_valid", "no_provider_call", "no_ungrounded_claims"]
+    },
+    {
+      "case_id": "extract-empty-context",
+      "prompt": "extract/v1.yaml",
+      "route": "extract",
+      "tenant_id": "20000000-0000-0000-4000-800000000002",
+      "input": {"chunk_text": "", "heading_path": [], "source_citation": "fixture:empty"},
+      "expected": {"concepts": [], "claims": [], "relations": []},
+      "assertions": ["schema_valid", "no_provider_call", "verbatim_evidence_only"]
+    },
+    {
+      "case_id": "classify-unknown",
+      "prompt": "classify/v1.yaml",
+      "route": "classify",
+      "tenant_id": "20000000-0000-0000-4000-800000000002",
+      "input": {"question": "Classify with no candidates.", "concept_summary": "", "curriculum_candidates": []},
+      "expected": {"intent": "unknown", "mappings": []},
+      "assertions": ["schema_valid", "no_provider_call", "unknown_is_explicit"]
+    },
+    {
+      "case_id": "vision-no-metadata",
+      "prompt": "vision/v1.yaml",
+      "route": "vision",
+      "tenant_id": "20000000-0000-0000-4000-800000000002",
+      "input": {"figure_metadata": {}, "caption": "", "source_citation": "fixture:empty"},
+      "expected": {"description": "", "uncertainties": ["insufficient_context"], "citations": []},
+      "assertions": ["schema_valid", "no_provider_call", "no_diagnosis"]
+    },
+    {
+      "case_id": "local-insufficient-context",
+      "prompt": "local/v1.yaml",
+      "route": "local",
+      "tenant_id": "20000000-0000-0000-4000-800000000002",
+      "input": {"question": "Answer only from context.", "retrieved_context": [], "claim_citations": []},
+      "expected": {"status": "insufficient_context", "sentences": []},
+      "assertions": ["schema_valid", "no_provider_call", "no_ungrounded_default"]
+    }
+  ]
+}

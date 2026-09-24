@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "radbrain://schemas/extract/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["concepts", "claims", "relations"],
+  "properties": {
+    "concepts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "type", "aliases"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "type": {
+            "enum": ["disease", "sign", "anatomy", "modality", "protocol", "classification", "technique"]
+          },
+          "aliases": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["concept", "type", "text", "evidence_span", "importance", "modality"],
+        "properties": {
+          "concept": {"type": "string", "minLength": 1},
+          "type": {"enum": ["finding", "feature", "differential", "management", "staging", "epidemiology"]},
+          "text": {"type": "string", "minLength": 1},
+          "evidence_span": {"type": "string", "minLength": 1},
+          "importance": {"type": "integer", "minimum": 1, "maximum": 5},
+          "modality": {"type": "string"}
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["src", "dst", "relation"],
+        "properties": {
+          "src": {"type": "string", "minLength": 1},
+          "dst": {"type": "string", "minLength": 1},
+          "relation": {
+            "enum": ["differential_of", "sign_of", "seen_on", "part_of", "contrasts_with", "classified_by", "caused_by"]
+          }
+        }
+      }
+    }
+  }
+}

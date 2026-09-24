@@ -1,0 +1,199 @@
+# Data handling runbook
+
+Status: **M0 control document; ingestion and deletion workflows are not complete**
+Scope: local development, private study inputs, tenant data, model egress, Core Library content, and operations
+Related: [`M0 runbook`](m0-foundation.md), [RLS ADR](../decisions/0001-tenant-isolation-rls.md), [model-provider gate](../decisions/0002-model-provider-gate.md)
+
+> This is an engineering control, not legal advice. Copyright, privacy, retention,
+> patient-data, and Core Library decisions require the designated human owners.
+
+## 1. Non-negotiable boundaries
+
+1. Do not use identifiable patient data in development, tests, demos, evals, issue
+   trackers, screenshots, prompts, or documentation. DICOM is rejected in v1.
+2. Candidate-owned books and study files remain in their tenant. radbrain never
+   redistributes them, and upload-derived drafts never enter the Core Library.
+3. Core Library content must be company-authored or licensed with recorded
+   provenance and rights. Its origin is an explicit editorial/legal decision.
+4. Provider calls that may receive tenant content are blocked until the
+   model-provider gate is approved. Default to mock/local processing meanwhile.
+5. `ALLOW_UNGROUNDED_DEFAULT=false`; no uncited tutor content is a default path.
+6. Telemetry records identifiers and hashes, not source text, figure pixels,
+   prompts containing source text, embeddings, credentials, or access tokens.
+7. Private object buckets, tenant-prefixed keys, short-lived signed URLs, RLS, and
+   tenant-aware caches are required before tenant data is accepted.
+
+This scaffold does not yet implement upload, malware/identifier scanning, export,
+deletion, signed download URLs, or production telemetry. Those are control
+obligations, not capabilities to infer from a placeholder endpoint.
+
+## 2. Data classification
+
+| Class | Examples | Repository/storage rule |
+| --- | --- | --- |
+| Public project data | Specs, ADRs, synthetic fixtures, UI copy | May be source controlled after review |
+| Credentials/secrets | OIDC client secret, DB/Object-store keys, model keys | Environment/secret manager only; never commit or log |
+| Account data | Name, email, time zone, exam date, study activity | Minimize, encrypt, tenant-scope, support export/delete |
+| Tenant study content | Uploads, pages, figures, OCR, chunks, claims, questions, chats | Private tenant scope; no cross-tenant cache or read |
+| Core Library | Licensed/authored notes, questions, teaching figures | Reserved Core scope with provenance and rights record |
+| Operational data | IDs, hashes, timings, token/cost counters, errors | Minimize; no raw content; retention and access controlled |
+| Restricted content | Identifiable patient data, credentials, regulated records | Do not ingest; quarantine and escalate if discovered |
+| Local private study material | Existing ignored study directories | Never inspect or copy by default; explicit authorization only |
+
+The two ignored root directories named in the repository README are private inputs.
+Documentation, test generation, search, indexing, hashing, and uploads must not enter
+those directories. Do not record their file names in tickets or chat.
+
+## 3. Local study-material procedure
+
+Use this procedure only when a user has explicitly authorized a specific local test.
+
+### Before access
+
+- Confirm the purpose, permitted files, destination environment, and whether a
+  model or external service may receive content.
+- Prefer a small, non-original synthetic fixture. Never copy the whole directory.
+- Confirm the material contains no identifiable patient data and is not being
+  redistributed outside the user's tenant.
+- Use a local/private runtime. Do not enable an unapproved cloud route.
+- Record only the test ticket and opaque fixture identifier needed for traceability.
+
+### During access
+
+- Read the minimum authorized files. Do not browse unrelated files or metadata.
+- Do not print source text into terminal transcripts, logs, screenshots, or chat.
+- Do not place source text in fixtures or golden sets. Golden sets require explicit
+  rights and de-identification; copied textbook excerpts are not default fixtures.
+- Keep originals immutable. Derived pages/crops stay in the tenant object prefix.
+- Stop if DICOM, patient identifiers, access credentials, or unexpected sensitive
+  content are found. Do not continue to identify the person or institution.
+
+### After access
+
+- Delete ad hoc local copies and generated exports after the test.
+- Remove test tenants and object prefixes through approved cleanup procedures.
+- Verify Git status and the diff; the private directories must remain ignored and
+  absent from the change.
+- Record that cleanup completed, without naming or describing private content.
+
+
+## 4. Ingestion and model boundary
+
+The M1 upload pipeline must enforce this sequence before content becomes available:
+
+1. allowlist and size check (PDF, DOCX, PPTX, PNG, JPEG, TIFF, MD, TXT; target 500 MB);
+2. private multipart upload to a tenant-prefixed staging key;
+3. checksum/deduplication within the tenant, malware scan, active-content removal,
+   image/decompression guard, and DICOM rejection;
+4. identifier/patient-content scan and quarantine on a possible hit;
+5. parse/render/derive only after checks pass, retaining immutable originals and
+   reproducible page/figure artefacts;
+6. attach provenance, tenant, retention/legal-hold state, and visible job status;
+7. make searchable content available only through tenant-authorized reads.
+
+ClamAV or a scanner can reduce risk but does not prove de-identification. A user
+confirmation is not permission to ingest identifiable patient data. Keep quarantined
+objects private, inaccessible to workers that expose content, and outside caches.
+
+Source text and images sent to a model are a governed disclosure. Before external
+egress, the route must have provider approval, payload minimization, retention/deletion
+settings, region/transfer approval, and spend limits. Until then use synthetic data
+or an approved local route. Provider prompt caching is off unless its tenant/scope
+behavior is reviewed.
+
+Extracted claims, notes, cards, and questions remain tenant-private derived content
+with the same access, export, deletion, cache, and legal-hold behavior as their source.
+A hash or embedding is personal/derived data when linkable to a tenant or source.
+
+## 5. Core Library boundary
+
+Core content is admitted only through an editorial workflow that records:
+
+- author or licensor, license/contract, permitted audience/region, version, and review;
+- provenance for claims, questions, figures, and explanations;
+- expiry/takedown contact and legal-hold process;
+- confirmation that no upload-derived draft or copyrighted candidate copy was promoted.
+
+Tenant users may read approved Core content, but cannot write it, infer tenant-private
+information through it, or use it to bypass provenance. A Core row is not a free pass
+for shared caches; only immutable, explicitly Core-scoped artifacts may share.
+
+## 6. Retention, export, deletion, and backups
+
+The implementation spec sets a maximum 30-day purge target after account deletion.
+Deletion is not complete when only the user row is hidden. The approved workflow must
+cover user/account records, memberships, sources, pages, figures, OCR, chunks,
+embeddings, claims, questions, chats, attempts, exports, object versions, queues,
+LLM/cache entries, and observability containing identifiable user data.
+
+Required behavior:
+
+- soft-delete/hide immediately; record completion state without source text;
+- revoke active sessions, signed URLs, and export artifacts;
+- prevent deleted content from search, generation, cache repopulation, and backups
+  beyond the approved legal/backup window;
+- purge or irreversibly de-identify derived/cache data within the approved window;
+- preserve only the minimum audit evidence required by the approved policy;
+- make export authenticated, tenant-scoped, time-bound, and free of other tenants.
+
+The scaffold's export/delete response shapes are not evidence of these workflows.
+A retention change requires human approval and an ADR. Backups must be encrypted,
+access-controlled, tested for tenant-safe restore, and documented with expiry and
+RPO/RTO. The product target is RPO 1 hour and RTO 4 hours, with a quarterly restore
+drill once production backups exist.
+
+
+## 7. Logging, observability, and support access
+
+Logs and traces may include opaque request/trace/job IDs, tenant ID where justified,
+model/route/version, token/cost counters, latency, error class, and content hashes.
+They must not include source text, full prompts, figure pixels, embeddings, auth
+tokens, client secrets, provider keys, signed URLs, or personal study content.
+
+Support access is time-limited and audited. Break-glass database access is not a
+substitute for RLS and must not use the runtime application's broad credentials.
+Before enabling an observability vendor, apply the same provider decision gate used
+for models: region, retention, training/use, redaction, access, and deletion.
+
+## 8. Verification checklist
+
+Before a tenant-data test:
+
+- [ ] synthetic or explicitly authorized, de-identified inputs only
+- [ ] provider/egress decision recorded; routes are mock/local if unapproved
+- [ ] runtime and migrator database roles are distinct
+- [ ] private bucket and `tenants/{tenant_id}/...` key policy verified
+- [ ] RLS two-tenant suite passes as the runtime role
+- [ ] logs/traces inspected for source text, prompts, secrets, and tokens
+- [ ] export/delete/cache cleanup behavior verified
+- [ ] test tenant and object prefix removed after the test
+
+Useful repository checks (when dependencies and services are available):
+
+```powershell
+git status --short
+git check-ignore 'Radiology Exam Material' 'Radiology Images'
+make check
+make rls
+```
+
+Expected: both private root paths are ignored, the diff contains no private path or
+file content, and required gates pass. A missing tool or unavailable database is a
+limitation to report, not a pass.
+
+## 9. Incident and takedown handling
+
+For suspected cross-tenant exposure, patient data, a leaked credential, or private
+source egress:
+
+1. stop the affected job/route/provider export and preserve redacted evidence;
+2. revoke credentials/signed URLs/sessions and isolate the tenant/object prefix;
+3. notify the security/privacy owner; do not investigate by reading more private
+   content than necessary;
+4. identify affected tenants/records using IDs and audit events, not source dumps;
+5. follow approved breach, legal-hold, takedown, and user-notification procedures;
+6. record containment, recovery, and follow-up controls without sensitive details.
+
+For copyright takedown, the approved source/legal-hold workflow must hide content
+promptly (product target: within one hour) while preserving required evidence.
+Never promise a recovery time or deletion result until the owner verifies it.

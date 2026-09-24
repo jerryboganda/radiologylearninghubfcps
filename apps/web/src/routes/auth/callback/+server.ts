@@ -8,8 +8,8 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
   }
   try {
     await completeLogin(url, cookies);
-  } catch (cause) {
-    console.error('OIDC callback failed', cause);
+  } catch {
+    console.error('OIDC callback failed');
     throw error(401, 'Sign-in could not be completed. Please try again.');
   }
   throw redirect(303, '/');

@@ -12,6 +12,8 @@ export interface SessionUser {
   name: string;
   email?: string;
   roles: string[];
+  tenantId: string;
+  tenantRole: string;
 }
 
 function config() {
@@ -96,8 +98,10 @@ export async function completeLogin(
     body
   });
   if (!response.ok) throw new Error('The OIDC token exchange was rejected');
-  const tokens = (await response.json()) as { id_token?: string };
-  if (!tokens.id_token) throw new Error('The OIDC provider did not return an ID token');
+  const tokens = (await response.json()) as { id_token?: string; access_token?: string };
+  if (!tokens.id_token || !tokens.access_token) {
+    throw new Error('The OIDC provider did not return the required tokens');
+  }
 
   const jwks = createRemoteJWKSet(new URL(`${oidc.internalIssuer}/protocol/openid-connect/certs`));
   const { payload } = await jwtVerify(tokens.id_token, jwks, {
@@ -115,13 +119,30 @@ export async function completeLogin(
     : typeof payload.preferred_username === 'string'
       ? payload.preferred_username
       : payload.sub;
-  const user: SessionUser = {
+  const user: Omit<SessionUser, 'tenantId' | 'tenantRole'> = {
     subject: payload.sub,
     name,
     ...(typeof payload.email === 'string' ? { email: payload.email } : {}),
     roles: Array.isArray(roles) ? roles.filter((role): role is string => typeof role === 'string') : []
   };
-  const session = await new SignJWT({ name: user.name, email: user.email, roles: user.roles })
+  const membershipResponse = await fetch(`${env.API_INTERNAL_URL ?? 'http://localhost:8000'}/v1/me`, {
+    headers: { authorization: `Bearer ${tokens.access_token}` }
+  });
+  if (!membershipResponse.ok) {
+    throw new Error('The authenticated subject has no current authorized membership');
+  }
+  const membership = (await membershipResponse.json()) as { id?: string; role?: string };
+  if (!membership.id || !membership.role) {
+    throw new Error('The API returned an invalid membership');
+  }
+
+  const session = await new SignJWT({
+    name: user.name,
+    email: user.email,
+    roles: user.roles,
+    tenantId: membership.id,
+    tenantRole: membership.role
+  })
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuer('radbrain-web')
     .setAudience('radbrain-web-session')
@@ -130,7 +151,11 @@ export async function completeLogin(
     .setExpirationTime('8h')
     .sign(oidc.key);
   cookies.set(SESSION_COOKIE, session, { ...options, maxAge: 8 * 60 * 60 });
-  return user;
+  return {
+    ...user,
+    tenantId: membership.id,
+    tenantRole: membership.role
+  };
 }
 
 export async function readSession(cookies: import('@sveltejs/kit').Cookies): Promise<SessionUser | null> {
@@ -143,11 +168,14 @@ export async function readSession(cookies: import('@sveltejs/kit').Cookies): Pro
       audience: 'radbrain-web-session'
     });
     if (!payload.sub || typeof payload.name !== 'string') return null;
+    if (typeof payload.tenantId !== 'string' || typeof payload.tenantRole !== 'string') return null;
     return {
       subject: payload.sub,
       name: payload.name,
       ...(typeof payload.email === 'string' ? { email: payload.email } : {}),
-      roles: Array.isArray(payload.roles) ? payload.roles.filter((role): role is string => typeof role === 'string') : []
+      roles: Array.isArray(payload.roles) ? payload.roles.filter((role): role is string => typeof role === 'string') : [],
+      tenantId: payload.tenantId,
+      tenantRole: payload.tenantRole
     };
   } catch {
     cookies.delete(SESSION_COOKIE, { path: '/' });

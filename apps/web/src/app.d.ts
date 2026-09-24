@@ -6,6 +6,8 @@ declare global {
         name: string;
         email?: string;
         roles: string[];
+        tenantId: string;
+        tenantRole: string;
       } | null;
     }
   }

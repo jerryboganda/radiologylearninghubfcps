@@ -6,8 +6,12 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-radbrain}
-      POSTGRES_USER: ${POSTGRES_USER:-radbrain_app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-radbrain_app}
+      POSTGRES_USER: ${POSTGRES_USER:-radbrain_bootstrap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-radbrain_bootstrap}
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER:-radbrain_app}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:-radbrain_app}
+      POSTGRES_MIGRATOR_USER: ${POSTGRES_MIGRATOR_USER:-radbrain_migrator}
+      POSTGRES_MIGRATOR_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD:-radbrain_migrator}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -73,6 +77,19 @@ services:
     command: ["python", "/srv/placeholder.py"]
     volumes:
       - ./infra/api/placeholder.py:/srv/placeholder.py:ro
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_APP_USER:-radbrain_app}:${POSTGRES_APP_PASSWORD:-radbrain_app}@postgres:5432/${POSTGRES_DB:-radbrain}
+      APP_ENV: ${APP_ENV:-dev}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/radbrain}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-http://keycloak:8080/realms/radbrain/protocol/openid-connect/certs}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-radbrain-web}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-radbrain-web-secret}
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: ${S3_BUCKET:-radbrain}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+      S3_REGION: ${S3_REGION:-us-east-1}
     ports:
       - "${API_PORT:-8000}:8000"
     healthcheck:
@@ -91,6 +108,15 @@ services:
   worker:
     image: python:3.12-slim
     working_dir: /srv
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_APP_USER:-radbrain_app}:${POSTGRES_APP_PASSWORD:-radbrain_app}@postgres:5432/${POSTGRES_DB:-radbrain}
+      APP_ENV: ${APP_ENV:-dev}
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: ${S3_BUCKET:-radbrain}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+      S3_REGION: ${S3_REGION:-us-east-1}
     command: ["python", "-c", "import time; print('radbrain worker placeholder'); time.sleep(3600)"]
     depends_on:
       redis:

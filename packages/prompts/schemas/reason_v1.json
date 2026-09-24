@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "radbrain://schemas/reason/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "claims", "citations"],
+  "properties": {
+    "status": {"enum": ["ok", "insufficient_context"]},
+    "claims": {"type": "array", "items": {"type": "string"}},
+    "citations": {"type": "array", "items": {"type": "string"}}
+  }
+}

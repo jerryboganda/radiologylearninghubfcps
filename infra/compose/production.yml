@@ -1,0 +1,4 @@
+services:
+  web:
+    image: ${RADBRAIN_WEB_IMAGE:?RADBRAIN_WEB_IMAGE must be an immutable image reference}
+    build: !reset null

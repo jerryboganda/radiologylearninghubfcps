@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "radbrain://schemas/vision/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["description", "uncertainties", "citations"],
+  "properties": {
+    "description": {"type": "string"},
+    "uncertainties": {"type": "array", "items": {"type": "string"}},
+    "citations": {"type": "array", "items": {"type": "string"}}
+  }
+}

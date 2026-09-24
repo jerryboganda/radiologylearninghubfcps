@@ -21,7 +21,7 @@
       <span class="status-dot"></span>
       <div>
         <strong>Signed in as {data.user.name}</strong>
-        <small>{data.user.email ?? data.user.subject}</small>
+        <small>{data.user.email ?? data.user.subject} · {data.user.tenantRole}</small>
       </div>
       <form method="POST" action="/auth/logout">
         <button class="button secondary" type="submit">Sign out</button>

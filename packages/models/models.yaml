@@ -1,0 +1,54 @@
+schema_version: 1
+config_version: m0-mock-v1
+provider_gate:
+  status: blocked
+  approved_by_adr: null
+  external_egress_allowed: false
+default_backend: mock
+allow_ungrounded_default: false
+routes:
+  reason:
+    targets:
+      - backend: mock
+        model: mock-only
+        api_key_env: null
+        base_url: null
+    fallbacks: []
+    timeout_ms: 1000
+    max_retries: 0
+  extract:
+    targets:
+      - backend: mock
+        model: mock-only
+        api_key_env: null
+        base_url: null
+    fallbacks: []
+    timeout_ms: 1000
+    max_retries: 0
+  classify:
+    targets:
+      - backend: mock
+        model: mock-only
+        api_key_env: null
+        base_url: null
+    fallbacks: []
+    timeout_ms: 1000
+    max_retries: 0
+  vision:
+    targets:
+      - backend: mock
+        model: mock-only
+        api_key_env: null
+        base_url: null
+    fallbacks: []
+    timeout_ms: 1000
+    max_retries: 0
+  local:
+    targets:
+      - backend: mock
+        model: mock-only
+        api_key_env: null
+        base_url: null
+    fallbacks: []
+    timeout_ms: 1000
+    max_retries: 0
