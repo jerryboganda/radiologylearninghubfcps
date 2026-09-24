@@ -94,7 +94,7 @@ async def _assert_tenant_isolation() -> None:
             await runtime.execute(
                 "SELECT set_config('app.tenant_id', $1, true)", str(tenant_a)
             )
-            visible = set(await runtime.fetch("SELECT id FROM sources"))
+            visible = {row["id"] for row in await runtime.fetch("SELECT id FROM sources")}
             assert visible == {source_a, core_source}
             cross_tenant_updates = await runtime.fetchval(
                 "WITH updated AS ("
@@ -130,7 +130,7 @@ async def _assert_tenant_isolation() -> None:
             await runtime.execute(
                 "SELECT set_config('app.tenant_id', $1, true)", str(tenant_b)
             )
-            visible = set(await runtime.fetch("SELECT id FROM sources"))
+            visible = {row["id"] for row in await runtime.fetch("SELECT id FROM sources")}
             assert visible == {source_b, core_source}
     finally:
         await runtime.close()
