@@ -29,14 +29,12 @@ def upgrade() -> None:
         DO $$
         BEGIN
             IF to_regrole('{_RUNTIME_ROLE}') IS NULL THEN
-                RAISE EXCEPTION (
-                    'required runtime role % must exist before migration', '{_RUNTIME_ROLE}'
-                );
+                RAISE EXCEPTION
+                    'required runtime role % must exist before migration', '{_RUNTIME_ROLE}';
             END IF;
             IF to_regrole('{_MIGRATOR_ROLE}') IS NULL THEN
-                RAISE EXCEPTION (
-                    'required migrator role % must exist before migration', '{_MIGRATOR_ROLE}'
-                );
+                RAISE EXCEPTION
+                    'required migrator role % must exist before migration', '{_MIGRATOR_ROLE}';
             END IF;
             IF current_user <> '{_MIGRATOR_ROLE}' THEN
                 RAISE EXCEPTION 'migrations must run as %', '{_MIGRATOR_ROLE}';
@@ -68,10 +66,9 @@ def upgrade() -> None:
                 WHERE runtime.rolname = '{_RUNTIME_ROLE}'
                   AND migrator.rolname = '{_MIGRATOR_ROLE}'
             ) THEN
-                RAISE EXCEPTION (
+                RAISE EXCEPTION
                     'runtime role % inherits migrator role %',
-                    '{_RUNTIME_ROLE}', '{_MIGRATOR_ROLE}'
-                );
+                    '{_RUNTIME_ROLE}', '{_MIGRATOR_ROLE}';
             END IF;
             IF EXISTS (
                 WITH RECURSIVE role_memberships(roleid, member) AS (
