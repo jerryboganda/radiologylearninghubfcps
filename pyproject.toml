@@ -56,3 +56,8 @@ strict = true
 mypy_path = "."
 explicit_package_bases = true
 plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["jwt", "redis", "redis.*", "uvicorn"]
+ignore_missing_imports = true

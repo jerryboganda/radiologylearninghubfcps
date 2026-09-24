@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import Annotated
+from typing import Annotated, Any, cast
 from uuid import UUID
 
 from apps.api.app.core.config import get_settings
@@ -56,10 +56,10 @@ async def readiness(
     session: Annotated[AsyncSession, Depends(get_system_session)],
 ) -> HealthResponse:
     try:
-        import redis.asyncio as redis  # type: ignore[import-not-found]
+        import redis.asyncio as redis
 
         await session.execute(text("SELECT 1"))
-        redis_client = redis.from_url(settings.redis_url, socket_connect_timeout=1)
+        redis_client = cast(Any, redis).from_url(settings.redis_url, socket_connect_timeout=1)
         try:
             await redis_client.ping()
         finally:
@@ -181,6 +181,6 @@ async def admin_ping(
 
 
 if __name__ == "__main__":
-    import uvicorn  # type: ignore[import-not-found]
+    import uvicorn
 
     uvicorn.run("apps.api.app.main:app", host="127.0.0.1", port=8000, reload=settings.debug)

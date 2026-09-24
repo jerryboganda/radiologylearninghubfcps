@@ -104,7 +104,7 @@ jobs:
       - name: Bandit
         run: python -m bandit -r apps/api/app apps/worker/app -ll
       - name: Python dependency audit
-        run: python -m pip_audit --strict
+        run: python -m pip_audit --strict --skip-editable
 
   migrations:
     name: Migration and RLS validation

@@ -35,7 +35,7 @@ class OIDCVerifier:
 
     def verify(self, token: str) -> OIDCIdentity:
         try:
-            import jwt  # type: ignore[import-not-found]
+            import jwt
         except ImportError as exc:  # pragma: no cover - packaged installations provide PyJWT
             raise OIDCVerificationError("OIDC verifier is not installed") from exc
 

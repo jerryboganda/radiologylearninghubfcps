@@ -5,7 +5,9 @@ Revises: 20260924_0001
 Create Date: 2026-09-24
 """
 
-from alembic import op
+from __future__ import annotations
+
+from apps.api.migrations.sql import execute_script
 
 revision = "20260924_0002"
 down_revision = "20260924_0001"
@@ -18,7 +20,7 @@ _RUNTIME_ROLE = "radbrain_app"
 
 
 def upgrade() -> None:
-    op.execute(
+    execute_script(
         f"""
         INSERT INTO tenants (id, kind, name, plan)
         VALUES ('{_CORE_TENANT_ID}'::uuid, 'core', 'Core Library', 'core')
@@ -88,7 +90,7 @@ def upgrade() -> None:
             FOR SELECT TO radbrain_migrator USING (true);
         """
     )
-    op.execute(
+    execute_script(
         f"""
         ALTER TABLE memberships ENABLE ROW LEVEL SECURITY;
         ALTER TABLE memberships FORCE ROW LEVEL SECURITY;
@@ -139,7 +141,7 @@ def upgrade() -> None:
             );
         """
     )
-    op.execute(
+    execute_script(
         f"""
         ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
         ALTER TABLE jobs FORCE ROW LEVEL SECURITY;
@@ -177,7 +179,7 @@ def upgrade() -> None:
             );
         """
     )
-    op.execute(
+    execute_script(
         f"""
         REVOKE ALL ON SCHEMA public FROM PUBLIC;
         REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
@@ -198,17 +200,17 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute("DROP POLICY IF EXISTS audit_log_insert_tenant ON audit_log")
-    op.execute("DROP POLICY IF EXISTS audit_log_select_tenant ON audit_log")
-    op.execute("DROP POLICY IF EXISTS job_steps_tenant_all ON job_steps")
-    op.execute("DROP POLICY IF EXISTS jobs_tenant_all ON jobs")
-    op.execute("DROP POLICY IF EXISTS sources_delete_own_private ON sources")
-    op.execute("DROP POLICY IF EXISTS sources_update_own_private ON sources")
-    op.execute("DROP POLICY IF EXISTS sources_insert_own_private ON sources")
-    op.execute("DROP POLICY IF EXISTS sources_select_own_or_core ON sources")
-    op.execute("DROP POLICY IF EXISTS memberships_migrator_resolver_read ON memberships")
-    op.execute("DROP POLICY IF EXISTS memberships_tenant_all ON memberships")
-    op.execute("DROP POLICY IF EXISTS users_migrator_resolver_read ON users")
-    op.execute("DROP POLICY IF EXISTS users_tenant_all ON users")
-    op.execute("DROP POLICY IF EXISTS tenants_update_own ON tenants")
-    op.execute("DROP POLICY IF EXISTS tenants_select_own ON tenants")
+    execute_script("DROP POLICY IF EXISTS audit_log_insert_tenant ON audit_log")
+    execute_script("DROP POLICY IF EXISTS audit_log_select_tenant ON audit_log")
+    execute_script("DROP POLICY IF EXISTS job_steps_tenant_all ON job_steps")
+    execute_script("DROP POLICY IF EXISTS jobs_tenant_all ON jobs")
+    execute_script("DROP POLICY IF EXISTS sources_delete_own_private ON sources")
+    execute_script("DROP POLICY IF EXISTS sources_update_own_private ON sources")
+    execute_script("DROP POLICY IF EXISTS sources_insert_own_private ON sources")
+    execute_script("DROP POLICY IF EXISTS sources_select_own_or_core ON sources")
+    execute_script("DROP POLICY IF EXISTS memberships_migrator_resolver_read ON memberships")
+    execute_script("DROP POLICY IF EXISTS memberships_tenant_all ON memberships")
+    execute_script("DROP POLICY IF EXISTS users_migrator_resolver_read ON users")
+    execute_script("DROP POLICY IF EXISTS users_tenant_all ON users")
+    execute_script("DROP POLICY IF EXISTS tenants_update_own ON tenants")
+    execute_script("DROP POLICY IF EXISTS tenants_select_own ON tenants")

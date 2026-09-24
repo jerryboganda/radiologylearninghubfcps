@@ -5,7 +5,9 @@ Revises:
 Create Date: 2026-09-24
 """
 
-from alembic import op
+from __future__ import annotations
+
+from apps.api.migrations.sql import execute_script
 
 revision = "20260924_0001"
 down_revision = None
@@ -18,7 +20,7 @@ _RUNTIME_ROLE = "radbrain_app"
 
 
 def upgrade() -> None:
-    op.execute(
+    execute_script(
         f"""
         DO $$
         BEGIN
@@ -33,9 +35,9 @@ def upgrade() -> None:
         $$;
         """
     )
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
-    op.execute(
+    execute_script("CREATE EXTENSION IF NOT EXISTS vector")
+    execute_script("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+    execute_script(
         """
         CREATE SCHEMA IF NOT EXISTS app;
 
@@ -73,7 +75,7 @@ def upgrade() -> None:
         $$;
         """
     )
-    op.execute(
+    execute_script(
         """
         CREATE TABLE tenants (
             id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -136,7 +138,7 @@ def upgrade() -> None:
             WHERE deleted_at IS NULL;
         """
     )
-    op.execute(
+    execute_script(
         """
         CREATE TRIGGER tenants_touch_updated_at
             BEFORE UPDATE ON tenants
@@ -151,7 +153,7 @@ def upgrade() -> None:
     )
 
 
-    op.execute(
+    execute_script(
         """
         CREATE TABLE sources (
             id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -270,7 +272,7 @@ def upgrade() -> None:
             ON audit_log (tenant_id, created_at DESC);
         """
     )
-    op.execute(
+    execute_script(
         """
         CREATE FUNCTION app.resolve_memberships(oidc_subject text)
         RETURNS TABLE (tenant_id uuid, role text)
@@ -293,7 +295,7 @@ def upgrade() -> None:
         """
     )
 
-    op.execute(
+    execute_script(
         """
         CREATE TRIGGER sources_touch_updated_at
             BEFORE UPDATE ON sources
@@ -309,7 +311,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute(
+    execute_script(
         """
         DROP TABLE IF EXISTS audit_log;
         DROP TABLE IF EXISTS job_steps;
