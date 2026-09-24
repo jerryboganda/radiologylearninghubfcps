@@ -291,7 +291,7 @@ def upgrade() -> None:
               AND m.active
               AND m.deleted_at IS NULL
         $$;
-        REVOKE ALL ON app.resolve_memberships(text) FROM PUBLIC;
+        REVOKE ALL ON FUNCTION app.resolve_memberships(text) FROM PUBLIC;
         """
     )
 

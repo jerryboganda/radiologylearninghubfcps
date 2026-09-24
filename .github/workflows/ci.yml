@@ -103,8 +103,12 @@ jobs:
           python -m pip install -e '.[dev]' pip-audit
       - name: Bandit
         run: python -m bandit -r apps/api/app apps/worker/app -ll
+      - name: Export auditable requirements
+        run: |
+          python -m pip list --format=freeze | grep -v '^radbrain==' > "$RUNNER_TEMP/radbrain-requirements.txt"
+          test -s "$RUNNER_TEMP/radbrain-requirements.txt"
       - name: Python dependency audit
-        run: python -m pip_audit --strict --skip-editable
+        run: python -m pip_audit --strict --requirement "$RUNNER_TEMP/radbrain-requirements.txt"
 
   migrations:
     name: Migration and RLS validation

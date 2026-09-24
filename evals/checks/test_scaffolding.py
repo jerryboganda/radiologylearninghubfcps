@@ -41,7 +41,7 @@ def test_migration_defines_rls_and_role_separation() -> None:
     assert "_MIGRATOR_ROLE = \"radbrain_migrator\"" in sql
     assert "_RUNTIME_ROLE = \"radbrain_app\"" in sql
     assert "rolbypassrls" in sql
-    assert "REVOKE ALL ON app.resolve_memberships(text) FROM PUBLIC" in sql
+    assert "REVOKE ALL ON FUNCTION app.resolve_memberships(text) FROM PUBLIC" in sql
     assert "GRANT EXECUTE ON FUNCTION app.resolve_memberships(text)" in sql
     assert "rights_status IN ('authored', 'licensed')" in sql
     assert "deleted_at IS NULL" in sql

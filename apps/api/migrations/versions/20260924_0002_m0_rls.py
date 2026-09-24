@@ -186,7 +186,7 @@ def upgrade() -> None:
         REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC;
         REVOKE ALL ON app.current_tenant_id() FROM PUBLIC;
         REVOKE ALL ON app.touch_updated_at() FROM PUBLIC;
-        REVOKE ALL ON app.resolve_memberships(text) FROM PUBLIC;
+        REVOKE ALL ON FUNCTION app.resolve_memberships(text) FROM PUBLIC;
         GRANT USAGE ON SCHEMA public, app TO {_RUNTIME_ROLE};
         GRANT EXECUTE ON FUNCTION app.current_tenant_id() TO {_RUNTIME_ROLE};
         GRANT EXECUTE ON FUNCTION app.resolve_memberships(text) TO {_RUNTIME_ROLE};
