@@ -7,8 +7,8 @@ from uuid import UUID, uuid4
 from apps.api.app.core.config import get_settings
 from apps.api.app.db.session import (
     get_system_session,
-    reset_tenant_context,
-    set_tenant_context,
+    tenant_context,
+    tenant_session,
 )
 from apps.api.app.observability import logger
 from apps.api.app.schemas.common import (
@@ -125,6 +125,7 @@ async def principal_from_request(
         except OIDCVerificationError as exc:
             raise HTTPException(status_code=401, detail="invalid access token") from exc
         request.state.tenant_id = principal.tenant_id
+        request.state.requires_tenant_session = True
         return principal
 
     if not settings.is_local_development:
@@ -134,17 +135,35 @@ async def principal_from_request(
     if local_principal is None:
         raise HTTPException(status_code=401, detail="authentication required")
     request.state.tenant_id = local_principal.tenant_id
+    request.state.requires_tenant_session = False
     return local_principal
 
 
 async def principal_context(
+    request: Request,
     principal: Annotated[Principal, Depends(principal_from_request)],
 ) -> AsyncIterator[Principal]:
-    token = set_tenant_context(principal.tenant_id)
-    try:
-        yield principal
-    finally:
-        reset_tenant_context(token)
+    if getattr(request.state, "requires_tenant_session", False):
+        async with tenant_session(principal.tenant_id) as session:
+            request.state.tenant_session = session
+            try:
+                yield principal
+            finally:
+                del request.state.tenant_session
+    else:
+        with tenant_context(principal.tenant_id):
+            yield principal
+
+
+async def tenant_db_session(
+    request: Request,
+    _principal: Annotated[Principal, Depends(principal_context)],
+) -> AsyncIterator[AsyncSession]:
+    """Yield the transaction-local session established for an OIDC request."""
+    session = getattr(request.state, "tenant_session", None)
+    if not isinstance(session, AsyncSession):
+        raise HTTPException(status_code=500, detail="tenant session unavailable")
+    yield session
 
 
 @app.get(f"{settings.api_prefix}/me", response_model=TenantResponse, tags=["auth"])

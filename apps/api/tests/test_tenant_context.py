@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+from types import SimpleNamespace
 from uuid import UUID
 
+import pytest
+from apps.api.app import main
 from apps.api.app.db.session import (
     current_tenant_id,
     reset_tenant_context,
     set_tenant_context,
     tenant_context,
 )
+from apps.api.app.security.principal import Principal
+from fastapi import HTTPException
 
 
 def test_tenant_context_is_scoped_and_restored() -> None:
@@ -29,3 +35,41 @@ def test_nested_tenant_context_restores_parent() -> None:
     finally:
         reset_tenant_context(token)
     assert current_tenant_id() is None
+
+
+@pytest.mark.asyncio
+async def test_oidc_principal_opens_and_closes_tenant_session(monkeypatch) -> None:
+    events: list[str] = []
+
+    @asynccontextmanager
+    async def fake_tenant_session(tenant_id: UUID):
+        events.append(f"open:{tenant_id}")
+        try:
+            yield object()
+        finally:
+            events.append(f"close:{tenant_id}")
+
+    monkeypatch.setattr(main, "tenant_session", fake_tenant_session)
+    tenant_id = UUID("20000000-0000-0000-0000-000000000002")
+    principal = Principal(
+        user_id=UUID("10000000-0000-0000-0000-000000000001"),
+        tenant_id=tenant_id,
+    )
+    request = SimpleNamespace(state=SimpleNamespace(requires_tenant_session=True))
+
+    context = main.principal_context(request, principal)
+    assert await anext(context) is principal
+    with pytest.raises(StopAsyncIteration):
+        await anext(context)
+
+    assert events == [f"open:{tenant_id}", f"close:{tenant_id}"]
+    assert not hasattr(request.state, "tenant_session")
+
+
+@pytest.mark.asyncio
+async def test_tenant_db_session_fails_closed_without_oidc_scope() -> None:
+    request = SimpleNamespace(state=SimpleNamespace())
+    context = main.tenant_db_session(request, object())
+    with pytest.raises(HTTPException) as denied:
+        await anext(context)
+    assert denied.value.status_code == 500

@@ -27,7 +27,7 @@ class OIDCVerifier:
 
     def __init__(self, settings: Settings) -> None:
         self._issuer = settings.oidc_issuer.rstrip("/")
-        self._audience = settings.oidc_client_id
+        self._audience = settings.oidc_audience
         self._jwks_url = settings.oidc_jwks_url or (
             f"{self._issuer}/protocol/openid-connect/certs"
         )

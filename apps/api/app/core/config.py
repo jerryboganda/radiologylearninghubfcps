@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     oidc_issuer: str = "http://localhost:8080/realms/radbrain"
     oidc_jwks_url: str | None = None
     oidc_client_id: str = "radbrain-web"
+    oidc_audience: str = "radbrain-api"
     oidc_client_secret: str = "change-me"
     cookie_secure: bool = False
     embed_dim: int = Field(default=1024, ge=1)

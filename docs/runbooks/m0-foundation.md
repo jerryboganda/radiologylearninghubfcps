@@ -18,7 +18,7 @@ evidence:
 3. The two-tenant RLS suite passes as the non-privileged application role.
 4. CI is green.
 
-CI run `36057363650` for revision `2f3fe24` is green. It verifies Python, web,
+CI run `36059268863` for revision `5f3e67a` is green. It verifies Python, web,
 OpenAPI reproducibility, security scans, Compose validation, live migrations, the
 non-privileged two-tenant RLS proof, and the full runtime Compose startup/API-web-
 worker health path. This is strong CI/runtime evidence, but it is not staging OIDC
@@ -73,10 +73,11 @@ Copy-Item .env.example .env
 Review every value even when the local default is convenient:
 
 - `DATABASE_URL` is the RLS-bound runtime role; `DATABASE_MIGRATOR_URL` is separate.
-- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, and `OIDC_CLIENT_SECRET` point to the local realm.
-  The checked-in disposable local realm may contain its own development-only secret;
-  align the environment with that realm for local use, or rotate the local client and
-  realm consistently. Never reuse a local value in staging.
+- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and `OIDC_AUDIENCE` define
+  the local realm/client and the API resource-server audience. The checked-in disposable
+  local realm maps the API audience into access tokens; align the environment with that
+  realm for local use, or rotate the local client and realm consistently. Never reuse a
+  local value in staging.
 - `S3_*` settings describe the private RustFS bucket in development.
 - `MODELS_CONFIG_PATH` points to checked-in mock route configuration.
 - `ALLOW_UNGROUNDED_DEFAULT` remains `false` while provider approval is open.

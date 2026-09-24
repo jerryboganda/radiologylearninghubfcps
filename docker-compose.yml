@@ -105,6 +105,7 @@ services:
       OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/radbrain}
       OIDC_JWKS_URL: ${OIDC_JWKS_URL:-http://keycloak:8080/realms/radbrain/protocol/openid-connect/certs}
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-radbrain-web}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-radbrain-api}
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://storage:9000
       S3_BUCKET: ${S3_BUCKET:-radbrain}
