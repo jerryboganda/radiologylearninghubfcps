@@ -18,7 +18,7 @@ evidence:
 3. The two-tenant RLS suite passes as the non-privileged application role.
 4. CI is green.
 
-CI run `36068481997` for revision `0d674c5` is green. It verifies Python, web,
+CI run `36141597302` for revision `1c1a5cd` is green. It verifies Python, web,
 OpenAPI reproducibility, security scans, Compose validation, live migrations, the
 non-privileged two-tenant RLS proof, and the full runtime Compose startup/API-web-
 worker health path. This is strong CI/runtime evidence, but it is not staging OIDC
@@ -359,8 +359,8 @@ artifacts. The workflow also checks public API liveness/readiness and web login 
 claim staging database RLS evidence; that item remains open until a separate protected
 staging proof runs as the non-privileged application role.
 ## 13.2 Verified CI/runtime evidence
-- **Revision:** `0d674c5` (`0d674c5241f9e318f8540d3bfdd2598a76b68fc5`)
-- **Workflow:** [`CI run 36068481997`](https://github.com/jerryboganda/radiologylearninghubfcps/actions/runs/36068481997)
+- **Revision:** `1c1a5cd` (`1c1a5cd005a9f86cf69901347a39b4dbb9d7734d`)
+- **Workflow:** [`CI run 36141597302`](https://github.com/jerryboganda/radiologylearninghubfcps/actions/runs/36141597302)
 - **Green jobs:** Python checks, Web checks, OpenAPI contract, Security scans, Compose validation, Full runtime Compose, and Migration/RLS validation.
 - **Live database proof:** migrations reached head and the two-tenant RLS suite passed through the non-privileged application role.
 - **Runtime proof:** the real API, Celery worker, PostgreSQL, Redis, RustFS, Keycloak, and web services started in GitHub Actions; API/web health and worker ping passed.
@@ -389,7 +389,7 @@ Escalate to:
 - [x] CI two-tenant RLS/no-context suite passes as non-privileged runtime role
 - [ ] staging two-tenant RLS/no-context suite passes as non-privileged runtime role
 - [x] OpenAPI-to-TypeScript generation and repository checks pass
-- [x] CI is green on the candidate revision (`0d674c5`, run `36068481997`)
+- [x] CI is green on the candidate revision (`1c1a5cd`, run `36141597302`)
 - [x] full runtime Compose startup, API/web health, and worker ping pass in CI
 - [x] observability skeleton emits bounded redacted request signals
 - [ ] staging trace/metric review is recorded

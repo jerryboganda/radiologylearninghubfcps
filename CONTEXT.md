@@ -106,7 +106,7 @@ The authoritative checklist and rollback steps are in
   are unapproved. The model ADR is a gate, not a selection.
 - The protected M0 staging workflow is implemented but cannot be accepted until the
   `staging` GitHub Environment has required reviewers, variables, and protected secrets.
-- CI run `36068481997` on revision `0d674c5` is green, including full runtime
+- CI run `36141597302` on revision `1c1a5cd` is green, including full runtime
   Compose startup, live migrations, and the non-privileged two-tenant RLS proof. Staging
   OIDC/browser acceptance, staging trace review, and release/security approvals remain
   outstanding.
