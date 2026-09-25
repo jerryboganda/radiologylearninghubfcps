@@ -17,6 +17,7 @@ milestones defined by the implementation specification.
 | Model-provider approval gate | [`decisions/0002-model-provider-gate.md`](decisions/0002-model-provider-gate.md) |
 | OIDC API audience decision | [`decisions/0004-api-oidc-audience.md`](decisions/0004-api-oidc-audience.md) |
 | GitHub Actions compute policy | [`decisions/0005-github-actions-compute-policy.md`](decisions/0005-github-actions-compute-policy.md) |
+| Remaining-work goal and A–Z queue | [`remaining-work.md`](remaining-work.md) |
 
 ## Documentation rules
 

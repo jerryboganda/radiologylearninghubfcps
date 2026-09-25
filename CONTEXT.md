@@ -95,7 +95,8 @@ M0 is complete only when all of the following have evidence on staging:
 - The runbook, five-minute clean-tenant demo, and security scan are current.
 
 The authoritative checklist and rollback steps are in
-[`docs/runbooks/m0-foundation.md`](docs/runbooks/m0-foundation.md).
+[`docs/runbooks/m0-foundation.md`](docs/runbooks/m0-foundation.md). The full remaining
+A–Z goal is tracked in [`docs/remaining-work.md`](docs/remaining-work.md).
 
 ## Known limitations and open decisions
 

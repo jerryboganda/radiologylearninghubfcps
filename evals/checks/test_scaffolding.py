@@ -26,6 +26,7 @@ PROMPT_ROOT = ROOT / "packages" / "prompts"
 
 E2E_BROWSER = ROOT / "apps" / "web" / "e2e" / "m0-staging.spec.ts"
 STAGING_WORKFLOW = ROOT / ".github" / "workflows" / "m0-staging-acceptance.yml"
+REMAINING_WORK = ROOT / "docs" / "remaining-work.md"
 
 
 def test_compute_policy_and_staging_workflow_are_fail_closed() -> None:
@@ -60,6 +61,20 @@ def test_compute_policy_and_staging_workflow_are_fail_closed() -> None:
     assert "npm run test:staging" in workflow
     assert "ref: ${{ github.sha }}" in workflow
     assert "ref: ${{ inputs.revision }}" not in workflow
+
+    goal = REMAINING_WORK.read_text(encoding="utf-8")
+    headings = (
+        "## Objective",
+        "## A–Z execution queue",
+        "## Definition of done",
+        "## Immediate pursuit",
+    )
+    for heading in headings:
+        assert heading in goal
+    for slice_name in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        assert f"| {slice_name} |" in goal
+    assert "M0 is not accepted" in goal
+    assert "M1–M7 feature implementation has started" in goal
 
 
 def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
