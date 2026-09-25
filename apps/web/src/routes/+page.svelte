@@ -17,7 +17,7 @@
     provenance-first home. This initial shell is ready for your library.
   </p>
   {#if data.user}
-    <div class="account-card">
+    <div class="account-card" data-user-subject={data.user.subject}>
       <span class="status-dot"></span>
       <div>
         <strong>Signed in as {data.user.name}</strong>

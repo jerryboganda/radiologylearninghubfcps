@@ -1,6 +1,6 @@
 # M0 Foundation runbook and five-minute demo
 
-Status: **CI/runtime verified; staging OIDC acceptance pending**
+Status: **CI/runtime verified; staging workflow implemented; staging OIDC acceptance pending**
 Scope: local development scaffold and staging acceptance for M0 only
 Related: [`data handling`](data-handling.md), [RLS ADR](../decisions/0001-tenant-isolation-rls.md), [model gate](../decisions/0002-model-provider-gate.md)
 
@@ -18,7 +18,7 @@ evidence:
 3. The two-tenant RLS suite passes as the non-privileged application role.
 4. CI is green.
 
-CI run `36068149588` for revision `20c2096` is green. It verifies Python, web,
+CI run `36068481997` for revision `0d674c5` is green. It verifies Python, web,
 OpenAPI reproducibility, security scans, Compose validation, live migrations, the
 non-privileged two-tenant RLS proof, and the full runtime Compose startup/API-web-
 worker health path. This is strong CI/runtime evidence, but it is not staging OIDC
@@ -323,18 +323,48 @@ Attach or link only redacted, non-sensitive evidence:
 Do not attach environment files, database dumps, raw tokens, source pages, prompts,
 private paths/file listings, or screenshots containing secrets/private content.
 
-## 13.1 Verified CI/runtime evidence
+## 13.1 GitHub Actions-only compute and staging acceptance
 
-- **Revision:** `2f3fe24` (`2f3fe24ae815a86e49b982c035db4159677b3c3d`)
-- **Workflow:** [`CI run 36057363650`](https://github.com/jerryboganda/radiologylearninghubfcps/actions/runs/36057363650)
-- **Green jobs:** Python checks, Web checks, OpenAPI contract, Security scans, Compose
-  validation, Full runtime Compose, and Migration/RLS validation.
-- **Live database proof:** migrations reached head and the two-tenant RLS suite passed
-  through the non-privileged application role.
-- **Runtime proof:** the real API, Celery worker, PostgreSQL, Redis, RustFS, Keycloak,
-  and web services started in GitHub Actions; API/web health and worker ping passed.
-- **Not included:** staging OIDC browser login/logout, staging Keycloak configuration,
-  redacted staging trace review, and release/security approvals.
+All compute-intensive verification is dispatched to GitHub Actions. The project-wide
+policy is recorded in [`AGENTS.md`](../AGENTS.md) and [`CLAUDE.md`](../CLAUDE.md). The
+protected [`M0 staging acceptance workflow`](../../.github/workflows/m0-staging-acceptance.yml)
+is manual, runs from `main`, checks out an exact 40-character revision, and targets the
+protected `staging` GitHub Environment. Configure required reviewers on that environment
+before dispatch; GitHub Actions cannot substitute for those human approvals.
+
+The environment must provide these repository variables (non-secret identifiers/URLs)
+and protected secrets (values are never displayed or committed):
+
+| Name | Type | Purpose |
+| --- | --- | --- |
+| `RADBRAIN_STAGING_WEB_URL` | variable | HTTPS staging web origin |
+| `RADBRAIN_STAGING_API_URL` | variable | HTTPS staging API origin |
+| `RADBRAIN_STAGING_DEPLOYED_REVISION` | variable | Exact 40-character SHA running the staging deployment |
+| `RADBRAIN_STAGING_EXPECTED_TENANT_ID` | variable | Synthetic authorized tenant UUID |
+| `RADBRAIN_STAGING_EXPECTED_ROLE` | variable | Expected synthetic role, normally `student` |
+| `RADBRAIN_STAGING_EXPECTED_SUBJECT` | variable | Synthetic OIDC subject UUID for the browser session |
+| `RADBRAIN_STAGING_EXPECTED_USER_LABEL` | variable | Synthetic display label shown after browser login |
+| `RADBRAIN_STAGING_API_AUDIENCE` | variable | API audience expected in the access token |
+| `RADBRAIN_STAGING_UNAUTHORIZED_TENANT_ID` | variable | Synthetic tenant UUID not authorized for the test user |
+| `RADBRAIN_STAGING_TEST_USERNAME` | secret | Synthetic OIDC test username |
+| `RADBRAIN_STAGING_TEST_PASSWORD` | secret | Synthetic OIDC test password |
+| `RADBRAIN_STAGING_STUDENT_TOKEN` | secret | Short-lived synthetic student access token |
+| `RADBRAIN_STAGING_ADMIN_TOKEN` | secret | Short-lived synthetic org-admin access token |
+| `RADBRAIN_STAGING_WRONG_AUDIENCE_TOKEN` | secret | Short-lived synthetic token with a deliberately wrong API audience |
+
+Dispatch with the exact candidate revision, redacted deployment ID, and references to
+security approval, release approval, and the redacted trace review. The workflow runs
+Playwright in Chromium with screenshots, video, and traces disabled; it does not upload
+artifacts. The workflow also checks public API liveness/readiness and web login availability. It does not
+claim staging database RLS evidence; that item remains open until a separate protected
+staging proof runs as the non-privileged application role.
+## 13.2 Verified CI/runtime evidence
+- **Revision:** `0d674c5` (`0d674c5241f9e318f8540d3bfdd2598a76b68fc5`)
+- **Workflow:** [`CI run 36068481997`](https://github.com/jerryboganda/radiologylearninghubfcps/actions/runs/36068481997)
+- **Green jobs:** Python checks, Web checks, OpenAPI contract, Security scans, Compose validation, Full runtime Compose, and Migration/RLS validation.
+- **Live database proof:** migrations reached head and the two-tenant RLS suite passed through the non-privileged application role.
+- **Runtime proof:** the real API, Celery worker, PostgreSQL, Redis, RustFS, Keycloak, and web services started in GitHub Actions; API/web health and worker ping passed.
+- **Not included:** staging OIDC browser login/logout, staging Keycloak configuration, redacted staging trace review, and release/security approvals.
 ## 14. Current limitations and escalation
 
 The M0 runtime and CI evidence is recorded above. Confirm staging configuration and
@@ -343,7 +373,6 @@ The web shell now exchanges the code, verifies the ID token, and calls the API w
 access token so the session stores only API-authorized tenant/role values. A successful
 browser redirect alone is still not staging evidence; run the full flow and record
 redacted results.
-
 Escalate to:
 
 - **security owner** for RLS, auth, credential, cross-tenant, or sensitive-log issues;
@@ -357,15 +386,15 @@ Escalate to:
 - [x] liveness/readiness and web health are meaningful, not constant success shells
 - [ ] real OIDC login/callback/logout works with membership-derived tenant/role
 - [ ] unauthorized switch, invalid token, and role denial are proven on staging
-- [x] two-tenant RLS/no-context suite passes as non-privileged runtime role
+- [x] CI two-tenant RLS/no-context suite passes as non-privileged runtime role
+- [ ] staging two-tenant RLS/no-context suite passes as non-privileged runtime role
 - [x] OpenAPI-to-TypeScript generation and repository checks pass
-- [x] CI is green on the candidate revision (`2f3fe24`, run `36057363650`)
+- [x] CI is green on the candidate revision (`0d674c5`, run `36068481997`)
 - [x] full runtime Compose startup, API/web health, and worker ping pass in CI
 - [x] observability skeleton emits bounded redacted request signals
 - [ ] staging trace/metric review is recorded
 - [ ] staging OIDC login/callback/logout works with membership-derived tenant/role
 - [ ] no open critical/high security finding
 - [ ] runbook and clean-tenant five-minute demo are current and approved
-
 Record the evidence and obtain the designated engineering/security/release approvals.
 Until then, report **M0 in progress**, not complete.

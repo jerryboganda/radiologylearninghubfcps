@@ -59,6 +59,20 @@
   reviewed Core content may use shared scope.
 - Never use header-based development identity outside local development.
 
+## Repository-wide compute policy
+
+All compute-intensive verification MUST run in GitHub Actions. This includes Docker
+Compose startup, browser/E2E tests, integration tests, database migrations, RLS proofs,
+production builds, security/dependency scans, evals, and performance/load checks. Local
+runs are limited to lightweight syntax, unit, lint, type, and diff checks. A local pass
+must never be reported as a substitute for a missing or failed Actions result.
+
+The protected `staging` GitHub Environment is the only environment authorized to execute
+M0 staging acceptance. Its configuration, required reviewers, and secret names are
+operational prerequisites; secrets and credentials must never be committed or printed.
+The test-only `@playwright/test` dependency is pinned in the web lockfile for the manual
+GitHub Actions browser acceptance workflow; it is not shipped in the web runtime.
+
 ## Change workflow
 
 1. State the plan and affected paths.
@@ -74,8 +88,8 @@
 Use Conventional Commits and one feature per pull request. A proposed loop is:
 
 ```text
-plan -> tests -> implementation -> make check -> make rls -> make types
-     -> review runbook/ADR -> inspect diff
+plan -> tests -> implementation -> lightweight local checks -> make ci
+     -> make types -> review runbook/ADR -> inspect diff
 ```
 
 Run integration or eval targets only when they exist in the checkout. Never report

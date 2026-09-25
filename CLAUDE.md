@@ -58,13 +58,27 @@ resumable; and personal uploads are never redistributed.
 
 ```text
 plan -> read spec/context -> write tests for core/security behavior -> implement
-     -> run the narrow check -> run available make check, make rls, make types
-     -> run integration/eval targets that actually exist -> update runbook/ADR
+     -> run lightweight local checks -> dispatch compute targets with `make ci`
+     -> run `make types` and review the generated diff
+     -> run integration/eval targets in GitHub Actions -> update runbook/ADR
      -> inspect diff and scope -> open/update PR
 ```
 
 Do not claim `make it`, eval, deployment, or staging success when that target or
 environment is absent. Record skipped checks and limitations in the handoff.
+
+## Repository-wide compute policy
+
+All compute-intensive verification MUST run in GitHub Actions. This includes Docker
+Compose startup, browser/E2E tests, integration tests, database migrations, RLS proofs,
+production builds, security/dependency scans, evals, and performance/load checks. Local
+runs are limited to lightweight syntax, unit, lint, type, and diff checks. A local pass
+must never be reported as a substitute for a missing or failed Actions result.
+
+M0 staging acceptance runs only in the protected `staging` GitHub Environment through
+[`m0-staging-acceptance.yml`](.github/workflows/m0-staging-acceptance.yml). Required
+reviewer configuration and secrets are external prerequisites; never commit or print
+credentials, tokens, passwords, private paths, or tenant content.
 
 ## Stop and ask before
 

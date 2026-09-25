@@ -50,5 +50,5 @@ missing or mismatched API audience is rejected before membership lookup.
 
 The API regression test covers a valid `radbrain-api` audience and rejects a validly
 signed token for `radbrain-web`. M0 staging acceptance must additionally capture a
-real browser login, callback, invalid-token denial, unauthorized tenant switch, role
-denial, and logout without recording token values.
+real browser login, callback, invalid-token denial, wrong-audience denial,
+unauthorized tenant switch, role denial, and logout without recording token values.

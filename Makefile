@@ -1,6 +1,6 @@
 SHELL := powershell.exe
 
-.PHONY: up down check test typecheck lint migrate rls types security-scan
+.PHONY: up down check test typecheck lint migrate rls types security-scan ci
 
 up:
 	docker compose up -d
@@ -15,7 +15,6 @@ check:
 	python -m pytest -q apps/api/tests evals/checks/test_scaffolding.py
 	npm --prefix apps/web run check
 	npm --prefix apps/web test
-	npm --prefix apps/web run build
 
 test:
 	python -m pytest -q
@@ -31,11 +30,12 @@ lint:
 migrate:
 	python -m alembic -c alembic.ini upgrade head
 
-rls:
-	python -m pytest -q evals/checks/test_rls_live.py
+rls: ci
 
 types:
 	python scripts/generate_openapi_types.py
 
-security-scan:
-	python -m bandit -r apps/api/app apps/worker/app
+ci:
+	$ref = git rev-parse --abbrev-ref HEAD; $sha = git rev-parse HEAD; $started = [DateTime]::UtcNow; gh workflow run ci.yml --ref $ref; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $runId = $null; for ($attempt = 0; $attempt -lt 30 -and -not $runId; $attempt++) { Start-Sleep -Seconds 2; $runs = gh run list --workflow ci.yml --commit $sha --limit 5 --json databaseId,createdAt | ConvertFrom-Json; $run = $runs | Where-Object { [DateTime]$_.createdAt -ge $started.AddSeconds(-5) } | Select-Object -First 1; if ($run) { $runId = $run.databaseId } }; if (-not $runId) { Write-Error 'Unable to find the dispatched CI run'; exit 1 }; gh run watch $runId --exit-status
+
+security-scan: ci

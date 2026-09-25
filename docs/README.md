@@ -13,7 +13,10 @@ milestones defined by the implementation specification.
 | Local and private data rules | [`runbooks/data-handling.md`](runbooks/data-handling.md) |
 | M0 operation, verification, rollback, and demo | [`runbooks/m0-foundation.md`](runbooks/m0-foundation.md) |
 | Tenant isolation and RLS decision | [`decisions/0001-tenant-isolation-rls.md`](decisions/0001-tenant-isolation-rls.md) |
+| Local S3 runtime decision | [`decisions/0003-rustfs-local-s3-runtime.md`](decisions/0003-rustfs-local-s3-runtime.md) |
 | Model-provider approval gate | [`decisions/0002-model-provider-gate.md`](decisions/0002-model-provider-gate.md) |
+| OIDC API audience decision | [`decisions/0004-api-oidc-audience.md`](decisions/0004-api-oidc-audience.md) |
+| GitHub Actions compute policy | [`decisions/0005-github-actions-compute-policy.md`](decisions/0005-github-actions-compute-policy.md) |
 
 ## Documentation rules
 
@@ -27,6 +30,8 @@ milestones defined by the implementation specification.
 
 ## Current status
 
-The repository is an M0 foundation scaffold. Do not infer M0 completion from the
-presence of this documentation. The authoritative exit test is in the M0 runbook,
-and all four exit conditions must have fresh evidence on staging.
+- The repository is an M0 foundation scaffold. Do not infer M0 completion from the
+  presence of this documentation. The authoritative exit test is in the M0 runbook,
+  and all four exit conditions must have fresh evidence on staging.
+- Compute-intensive checks are dispatched with `make ci` or the protected staging workflow;
+  local results are not staging evidence.

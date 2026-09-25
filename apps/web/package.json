@@ -13,12 +13,15 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "test": "node --test --experimental-strip-types src/lib/server/oidc-url.test.ts"
+    "test": "node --test --experimental-strip-types src/lib/server/oidc-url.test.ts",
+    "test:staging": "playwright test",
+    "typecheck:staging": "tsc --noEmit -p tsconfig.staging.json"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "^2.70.3",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@playwright/test": "1.52.0",
     "@types/node": "^24.10.1",
     "svelte": "^5.57.1",
     "svelte-check": "^4.3.4",

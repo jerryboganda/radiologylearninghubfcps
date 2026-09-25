@@ -85,8 +85,9 @@ from a clean tenant, and no open critical or high security finding.
 
 See [`runbooks/data-handling.md`](runbooks/data-handling.md),
 [`decisions/0001-tenant-isolation-rls.md`](decisions/0001-tenant-isolation-rls.md),
-[`decisions/0002-model-provider-gate.md`](decisions/0002-model-provider-gate.md), and
-[`decisions/0004-api-oidc-audience.md`](decisions/0004-api-oidc-audience.md).
+[`decisions/0002-model-provider-gate.md`](decisions/0002-model-provider-gate.md),
+[`decisions/0004-api-oidc-audience.md`](decisions/0004-api-oidc-audience.md), and
+[`decisions/0005-github-actions-compute-policy.md`](decisions/0005-github-actions-compute-policy.md).
 
 ## Repository decisions and open questions
 

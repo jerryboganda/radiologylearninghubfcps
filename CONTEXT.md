@@ -1,7 +1,7 @@
 # CONTEXT.md — radbrain current implementation context
 
-Last reviewed: **2026-09-24**
-Milestone: **M0 Foundation — CI/runtime verified; staging OIDC exit not yet accepted**
+Last reviewed: **2026-09-25**
+Milestone: **M0 Foundation — CI/runtime verified; staging workflow ready; staging OIDC exit not yet accepted**
 Canonical requirements: [`docs/SPEC.md`](docs/SPEC.md)
 
 ## Purpose
@@ -41,11 +41,12 @@ tests and staging evidence, not directory presence, to determine maturity.
 | `make up` | Start the Compose stack and show service status. |
 | `make down` | Stop containers while retaining named volumes. |
 | `make migrate` | Apply Alembic migrations to the configured database. |
-| `make check` | Run available lint, type, Python test, and web checks. |
+| `make check` | Run lightweight local lint, type, Python test, and web checks. |
 | `make test` | Run Python unit tests. |
-| `make rls` | Run the named RLS test target. |
+| `make rls` | Dispatch the live RLS proof through GitHub Actions. |
 | `make types` | Generate TypeScript API types from OpenAPI. |
-| `make security-scan` | Run Bandit against API and worker source. |
+| `make security-scan` | Dispatch the security scan through GitHub Actions. |
+| `make ci` | Dispatch CI for the current revision and wait for its result. |
 
 `make check` is the broad local gate, but success does not substitute for a Compose
 integration test, OIDC browser login, a real two-tenant database test, or CI.
@@ -103,7 +104,9 @@ The authoritative checklist and rollback steps are in
   local test.
 - The model provider, embedding provider, launch data region, and monthly spend cap
   are unapproved. The model ADR is a gate, not a selection.
-- CI run `36068149588` on revision `20c2096` is green, including full runtime
+- The protected M0 staging workflow is implemented but cannot be accepted until the
+  `staging` GitHub Environment has required reviewers, variables, and protected secrets.
+- CI run `36068481997` on revision `0d674c5` is green, including full runtime
   Compose startup, live migrations, and the non-privileged two-tenant RLS proof. Staging
   OIDC/browser acceptance, staging trace review, and release/security approvals remain
   outstanding.

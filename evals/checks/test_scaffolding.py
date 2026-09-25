@@ -24,6 +24,44 @@ EVAL_FIXTURE = ROOT / "evals" / "fixtures" / "synthetic_smoke_v1.json"
 PROMPT_ROOT = ROOT / "packages" / "prompts"
 
 
+E2E_BROWSER = ROOT / "apps" / "web" / "e2e" / "m0-staging.spec.ts"
+STAGING_WORKFLOW = ROOT / ".github" / "workflows" / "m0-staging-acceptance.yml"
+
+
+def test_compute_policy_and_staging_workflow_are_fail_closed() -> None:
+    workflow = STAGING_WORKFLOW.read_text(encoding="utf-8")
+    e2e = E2E_BROWSER.read_text(encoding="utf-8")
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    claude = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    config = (ROOT / "apps" / "web" / "playwright.config.ts").read_text(encoding="utf-8")
+
+    assert "workflow_dispatch:" in workflow
+    assert "environment: staging" in workflow
+    assert "RADBRAIN_STAGING_TEST_PASSWORD" in workflow
+    assert "RADBRAIN_STAGING_STUDENT_TOKEN" in workflow
+    assert "RADBRAIN_STAGING_ADMIN_TOKEN" in workflow
+    assert "RADBRAIN_STAGING_WRONG_AUDIENCE_TOKEN" in workflow
+    assert "RADBRAIN_STAGING_DEPLOYED_REVISION" in workflow
+    assert "npm ci --ignore-scripts" in workflow
+    assert "npm run typecheck:staging" in workflow
+    makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+    assert "gh run watch" in makefile
+    assert "rls: ci" in makefile
+    assert "security-scan: ci" in makefile
+    assert "playwright install --with-deps chromium" in workflow
+    assert "upload-artifact" not in workflow
+    assert "screenshot: 'off'" in config
+    assert "trace: 'off'" in config
+    assert "video: 'off'" in config
+    assert "console.log" not in e2e
+    assert "GitHub Actions" in agents and "GitHub Actions" in claude
+    package_json = (ROOT / "apps" / "web" / "package.json").read_text(encoding="utf-8")
+    assert "typecheck:staging" in package_json
+    assert "npm run test:staging" in workflow
+    assert "ref: ${{ github.sha }}" in workflow
+    assert "ref: ${{ inputs.revision }}" not in workflow
+
+
 def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
     compose = COMPOSE.read_text(encoding="utf-8")
     production = PRODUCTION_COMPOSE.read_text(encoding="utf-8")
@@ -37,6 +75,7 @@ def test_compose_runs_real_m0_processes_with_separate_migrator_role() -> None:
     assert "DATABASE_MIGRATOR_URL" not in compose.split("  worker:", 1)[1].split("  web:", 1)[0]
     assert "  storage:" in compose
     assert "rustfs/rustfs:1.0.0" in compose
+    assert "playwright" not in (ROOT / "apps" / "web" / "Dockerfile").read_text(encoding="utf-8")
     assert "RUSTFS_ACCESS_KEY" in compose
     assert "http://minio:9000" not in compose
     assert "  minio:" not in compose
